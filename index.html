@@ -1,0 +1,362 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>보일 법칙 가상실험</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f2f6fa;
+        margin: 0;
+        padding: 25px;
+        color: #263445;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: auto;
+        background: white;
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+        text-align: center;
+        color: #245b8f;
+    }
+
+    .description {
+        text-align: center;
+        color: #607080;
+        margin-bottom: 25px;
+    }
+
+    .experiment {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        background: #f7faff;
+        border-radius: 12px;
+    }
+
+    .cylinder-area {
+        width: 180px;
+        text-align: center;
+    }
+
+    .cylinder {
+        position: relative;
+        width: 110px;
+        height: 260px;
+        margin: 15px auto;
+        border: 5px solid #7894ad;
+        border-top: none;
+        border-radius: 0 0 12px 12px;
+        background: #eaf5ff;
+        overflow: hidden;
+    }
+
+    .gas {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(65, 155, 220, 0.25);
+        transition: height 0.3s;
+    }
+
+    .piston {
+        position: absolute;
+        top: 0;
+        left: -5px;
+        width: 120px;
+        height: 13px;
+        background: #526b80;
+        border-radius: 4px;
+        transition: top 0.3s;
+        z-index: 2;
+    }
+
+    .rod {
+        position: absolute;
+        top: -35px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 12px;
+        height: 35px;
+        background: #526b80;
+    }
+
+    .info {
+        min-width: 230px;
+        text-align: center;
+    }
+
+    .value {
+        font-size: 22px;
+        font-weight: bold;
+        margin: 12px 0;
+    }
+
+    .pressure {
+        color: #d45c36;
+    }
+
+    .buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        margin: 25px 0;
+    }
+
+    button {
+        border: none;
+        border-radius: 8px;
+        padding: 12px 20px;
+        font-size: 15px;
+        font-weight: bold;
+        cursor: pointer;
+        background: #347fba;
+        color: white;
+    }
+
+    button:hover {
+        opacity: 0.85;
+    }
+
+    button:disabled {
+        background: #b8c4ce;
+        cursor: not-allowed;
+    }
+
+    .reset {
+        background: #687987;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        text-align: center;
+    }
+
+    th, td {
+        border: 1px solid #d5dee7;
+        padding: 10px;
+    }
+
+    th {
+        background: #e8f1f8;
+    }
+
+    .formula {
+        background: #fff8e8;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    @media(max-width:600px) {
+        body { padding: 10px; }
+        .container { padding: 15px; }
+    }
+</style>
+</head>
+
+<body>
+<div class="container">
+
+    <h1>보일 법칙 가상실험</h1>
+    <p class="description">
+        온도가 일정할 때 기체의 부피와 압력 사이의 관계를 알아봅시다.
+    </p>
+
+    <div class="experiment">
+
+        <div class="cylinder-area">
+            <strong>기체의 부피 변화</strong>
+
+            <div class="cylinder">
+                <div class="gas" id="gas"></div>
+                <div class="piston" id="piston">
+                    <div class="rod"></div>
+                </div>
+            </div>
+
+            <div id="volumeDisplay" class="value">
+                부피: 20 mL
+            </div>
+        </div>
+
+        <div class="info">
+            <p>현재 기체의 상태</p>
+
+            <div id="pressureDisplay" class="value pressure">
+                압력: 100.0 kPa
+            </div>
+
+            <div id="pvDisplay" class="value">
+                PV: 2000
+            </div>
+
+            <p style="color:#718096; font-size:13px;">
+                초기 압력: 100 kPa<br>
+                초기 부피: 20 mL
+            </p>
+        </div>
+
+    </div>
+
+    <div class="buttons">
+        <button id="decreaseBtn" onclick="decreaseVolume()">
+            부피 1 mL 줄이기
+        </button>
+
+        <button onclick="recordData()">
+            실험값 기록하기
+        </button>
+
+        <button class="reset" onclick="resetExperiment()">
+            초기화
+        </button>
+    </div>
+
+    <h2>실험 결과 기록표</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>번호</th>
+                <th>부피 (mL)</th>
+                <th>압력 (kPa)</th>
+                <th>PV (kPa·mL)</th>
+            </tr>
+        </thead>
+        <tbody id="dataTable">
+        </tbody>
+    </table>
+
+    <div class="formula">
+        <strong>보일 법칙</strong>
+        <p>P₁V₁ = P₂V₂</p>
+        <p>온도가 일정할 때 기체의 압력은 부피에 반비례합니다.</p>
+    </div>
+
+</div>
+
+<script>
+    // 초기 실험 조건
+    const INITIAL_VOLUME = 20;
+    const INITIAL_PRESSURE = 100;
+    const CONSTANT_PV = INITIAL_VOLUME * INITIAL_PRESSURE;
+
+    let volume = INITIAL_VOLUME;
+    let records = [];
+
+    // 압력 계산
+    function calculatePressure() {
+        return CONSTANT_PV / volume;
+    }
+
+    // 화면 업데이트
+    function updateDisplay() {
+        const pressure = calculatePressure();
+        const pv = volume * pressure;
+
+        document.getElementById("volumeDisplay").innerText =
+            `부피: ${volume} mL`;
+
+        document.getElementById("pressureDisplay").innerText =
+            `압력: ${pressure.toFixed(1)} kPa`;
+
+        document.getElementById("pvDisplay").innerText =
+            `PV: ${pv.toFixed(1)}`;
+
+        // 피스톤과 기체 영역의 높이 변화
+        const ratio = volume / INITIAL_VOLUME;
+        const gasHeight = ratio * 100;
+
+        document.getElementById("gas").style.height =
+            gasHeight + "%";
+
+        document.getElementById("piston").style.top =
+            (100 - gasHeight) + "%";
+
+        // 최소 부피에 도달하면 버튼 비활성화
+        document.getElementById("decreaseBtn").disabled =
+            volume <= 1;
+    }
+
+    // 부피 1 mL 감소
+    function decreaseVolume() {
+        if (volume > 1) {
+            volume--;
+            updateDisplay();
+        }
+    }
+
+    // 실험값 기록
+    function recordData() {
+        // 같은 부피는 중복 기록하지 않음
+        if (records.some(item => item.volume === volume)) {
+            alert("이미 기록한 부피입니다.");
+            return;
+        }
+
+        const pressure = calculatePressure();
+        const pv = volume * pressure;
+
+        records.push({
+            volume: volume,
+            pressure: pressure,
+            pv: pv
+        });
+
+        updateTable();
+    }
+
+    // 기록표 업데이트
+    function updateTable() {
+        const table = document.getElementById("dataTable");
+        table.innerHTML = "";
+
+        records
+            .sort((a, b) => b.volume - a.volume)
+            .forEach((item, index) => {
+                const row = document.createElement("tr");
+
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${item.volume}</td>
+                    <td>${item.pressure.toFixed(1)}</td>
+                    <td>${item.pv.toFixed(1)}</td>
+                `;
+
+                table.appendChild(row);
+            });
+    }
+
+    // 실험 초기화
+    function resetExperiment() {
+        volume = INITIAL_VOLUME;
+        records = [];
+
+        updateDisplay();
+        updateTable();
+    }
+
+    // 최초 실행
+    updateDisplay();
+</script>
+
+</body>
+</html>
